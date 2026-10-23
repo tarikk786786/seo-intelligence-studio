@@ -1,0 +1,12 @@
+{
+  "name": "extension",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "SEO Intelligence Studio Manifest V3 Companion Extension (Keyword Surfer Equivalent)",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
+  }
+}

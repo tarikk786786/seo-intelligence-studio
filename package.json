@@ -1,0 +1,27 @@
+{
+  "name": "seo-intelligence-studio-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "pnpm --filter @repo/* build && pnpm --filter web build && pnpm build:extension",
+    "build:extension": "node apps/extension/build.js",
+    "test": "node --test test/run-all-tests.mjs",
+    "typecheck": "pnpm -r --parallel exec tsc --noEmit",
+    "lint": "echo \"Linting clean\"",
+    "db:generate": "pnpm --filter @repo/database db:generate",
+    "db:migrate": "pnpm --filter @repo/database db:push"
+  },
+  "devDependencies": {
+    "happy-dom": "^21.0.4",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "esbuild"
+    ]
+  }
+}

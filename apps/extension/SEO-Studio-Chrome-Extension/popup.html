@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SEO Intelligence Studio Companion</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card: #0f172a;
+      --card-border: #1e293b;
+      --accent: #0284c7;
+      --accent-hover: #0369a1;
+      --highlight: #38bdf8;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --border: #334155;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      width: 440px;
+      min-height: 560px;
+      max-height: 600px;
+      overflow-y: auto;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--bg);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--card-border);
+      border-radius: 3px;
+    }
+
+    /* Top Bar */
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--card);
+      border-bottom: 1px solid var(--card-border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .brand-sparkle {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, var(--accent), var(--highlight));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 12px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      color: var(--success);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--success);
+    }
+
+    /* Tab Navigation */
+    .tab-bar {
+      display: flex;
+      border-bottom: 1px solid var(--card-border);
+      background: var(--card);
+      padding: 0 8px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px 4px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn:hover {
+      color: var(--text);
+    }
+
+    .tab-btn.active {
+      color: var(--highlight);
+      border-bottom-color: var(--highlight);
+    }
+
+    /* Tab Content Panes */
+    .tab-pane {
+      display: none;
+      padding: 16px;
+    }
+
+    .tab-pane.active {
+      display: block;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* Score Header */
+    .score-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+    }
+
+    .score-circle {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: rgba(2, 132, 199, 0.15);
+      border: 2px solid var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--highlight);
+    }
+
+    .score-details h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .score-details p {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Action Buttons */
+    .btn-primary {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--accent);
+      hover-background: var(--accent-hover);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 12px;
+      transition: background 0.15s ease;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      padding: 6px 10px;
+      background: var(--card-border);
+      color: var(--text);
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .btn-secondary:hover {
+      background: var(--border);
+    }
+
+    /* Metric Rows */
+    .metric-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 11.5px;
+    }
+
+    .metric-row:last-child {
+      border-bottom: none;
+    }
+
+    .metric-label {
+      color: var(--muted);
+    }
+
+    .metric-val {
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .metric-val.good {
+      color: var(--success);
+    }
+
+    .metric-val.warn {
+      color: var(--warning);
+    }
+
+    .metric-val.bad {
+      color: var(--danger);
+    }
+
+    /* Tags */
+    .tag {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      background: var(--border);
+      color: var(--text);
+      font-family: monospace;
+    }
+
+    .tag-success {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .tag-warn {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    /* Inputs */
+    .input-group {
+      margin-bottom: 10px;
+    }
+
+    .input-label {
+      display: block;
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .input-field {
+      width: 100%;
+      background: #090d16;
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      color: var(--text);
+      font-size: 11.5px;
+      outline: none;
+    }
+
+    .input-field:focus {
+      border-color: var(--accent);
+    }
+
+    /* Headings Tree View */
+    .heading-tree {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-height: 140px;
+      overflow-y: auto;
+      padding: 4px 0;
+    }
+
+    .heading-item {
+      padding: 4px 6px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 4px;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .heading-item.h1 { padding-left: 6px; font-weight: 700; color: #fff; }
+    .heading-item.h2 { padding-left: 16px; color: var(--highlight); }
+    .heading-item.h3 { padding-left: 26px; color: var(--muted); }
+
+    /* Schema tags list */
+    .schema-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="brand-title">
+      <div class="brand-sparkle">✦</div>
+      <span>SEO Studio</span>
+    </div>
+    <div class="status-badge" id="connPill">
+      <div class="status-dot"></div>
+      <span id="connText">Connected</span>
+    </div>
+  </div>
+
+  <!-- Account & Access Status Strip -->
+  <div id="accountStrip" style="padding: 8px 16px; background: rgba(2, 132, 199, 0.08); border-bottom: 1px solid var(--card-border); display: flex; justify-content: space-between; align-items: center; font-size: 11px;">
+    <div id="authStatusText" style="display: flex; align-items: center; gap: 6px; overflow: hidden;">
+      <span class="tag tag-success" id="authRoleTag">ACCESS</span>
+      <span id="authUserEmail" style="color: var(--text); font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 180px;">Checking access...</span>
+    </div>
+    <div id="authActionGroup" style="display: flex; gap: 4px; shrink: 0;">
+      <button id="btnQuickLoginGoogle" class="btn-secondary" style="padding: 3px 6px; font-size: 10px; background: #fff; color: #111; border: none; font-weight: 700;">Google</button>
+      <button id="btnQuickLoginAmazon" class="btn-secondary" style="padding: 3px 6px; font-size: 10px; background: #FF9900; color: #111; border: none; font-weight: 700;">Amazon</button>
+      <button id="btnAuthAction" class="btn-secondary" style="padding: 3px 8px; font-size: 10px;">Login</button>
+    </div>
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="tab-audit">On-Page Audit</button>
+    <button class="tab-btn" data-tab="tab-keywords">Keywords</button>
+    <button class="tab-btn" data-tab="tab-geo">AI Visibility</button>
+    <button class="tab-btn" data-tab="tab-settings">Settings</button>
+  </div>
+
+  <!-- TAB 1: ON-PAGE AUDIT -->
+  <div class="tab-pane active" id="tab-audit">
+    <div class="score-banner">
+      <div class="score-details">
+        <h3 id="auditVerdict">Analyzing Page...</h3>
+        <p id="auditUrlShort">Extracting active tab DOM...</p>
+      </div>
+      <div class="score-circle" id="auditScoreVal">--</div>
+    </div>
+
+    <div style="display: flex; gap: 6px; margin-bottom: 12px;">
+      <button class="btn-primary" id="btnOpenInEditor" style="flex: 2; margin-bottom: 0;">
+        ↗ Open in Editor
+      </button>
+      <button class="btn-secondary" id="btnCopyAudit" style="flex: 1;" title="Copy markdown audit to clipboard">
+        📋 Copy
+      </button>
+      <button class="btn-secondary" id="btnExportJson" style="flex: 1;" title="Download complete JSON report">
+        📥 JSON
+      </button>
+    </div>
+
+    <!-- Optimization Alerts Card -->
+    <div id="auditAlertsCard" class="card" style="display: none; border-color: rgba(245, 158, 11, 0.4); background: rgba(245, 158, 11, 0.05); margin-bottom: 12px;">
+      <div class="card-title" style="color: var(--warning); margin-bottom: 6px;">
+        <span>⚠ Optimization Recommendations</span>
+        <span class="tag tag-warn" id="alertCountBadge">0</span>
+      </div>
+      <div id="auditAlertsList" style="display: flex; flex-direction: column; gap: 4px; font-size: 11px;">
+      </div>
+    </div>
+
+    <!-- Meta Tags Card -->
+    <div class="card">
+      <div class="card-title">
+        <span>Title & Meta Tags</span>
+        <span class="tag" id="tagTitleLen">-- chars</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Page Title:</span>
+        <span class="metric-val" id="valTitle" style="max-width: 260px; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">--</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Meta Description:</span>
+        <span class="metric-val" id="valMetaDesc" style="max-width: 260px; text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">--</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Canonical URL:</span>
+        <span class="metric-val" id="valCanonical">Checking...</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">OpenGraph Tags:</span>
+        <span class="metric-val" id="valOg">Checking...</span>
+      </div>
+    </div>
+
+    <!-- Headings Card -->
+    <div class="card">
+      <div class="card-title">
+        <span>Headings Structure</span>
+        <span class="tag" id="tagHeadingsTotal">-- tags</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">H1 Headings:</span>
+        <span class="metric-val" id="valH1Count">--</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">H2 Headings:</span>
+        <span class="metric-val" id="valH2Count">--</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">H3-H6 Headings:</span>
+        <span class="metric-val" id="valH3Count">--</span>
+      </div>
+      <div class="heading-tree" id="headingTreeList">
+        <!-- Injected heading elements -->
+      </div>
+    </div>
+
+    <!-- Content & Readability Card -->
+    <div class="card">
+      <div class="card-title">Content & Readability</div>
+      <div class="metric-row">
+        <span class="metric-label">Word Count:</span>
+        <span class="metric-val" id="valWordCount">--</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Est. Reading Time:</span>
+        <span class="metric-val" id="valReadTime">--</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Flesch Reading Ease:</span>
+        <span class="metric-val" id="valFlesch">--</span>
+      </div>
+    </div>
+
+    <!-- Media & Links Card -->
+    <div class="card">
+      <div class="card-title">Media & Links</div>
+      <div class="metric-row">
+        <span class="metric-label">Total Images:</span>
+        <span class="metric-val" id="valImagesTotal">--</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Missing ALT Tags:</span>
+        <span class="metric-val" id="valImagesMissingAlt">--</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Internal / External Links:</span>
+        <span class="metric-val" id="valLinksRatio">--</span>
+      </div>
+    </div>
+
+    <!-- Structured Data Card -->
+    <div class="card">
+      <div class="card-title">Structured Data (JSON-LD)</div>
+      <div class="schema-list" id="schemaTagsList">
+        <span class="tag">Scanning schema...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: KEYWORDS -->
+  <div class="tab-pane" id="tab-keywords">
+    <div class="card">
+      <div class="card-title">Keyword Research & Surfer Metrics</div>
+      <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+        <input type="text" id="inputKeyword" class="input-field" placeholder="Search keyword (e.g. generative engine optimization)...">
+        <button class="btn-secondary" id="btnSearchKw">Search</button>
+      </div>
+    </div>
+
+    <div class="card" id="kwResultsCard">
+      <div class="card-title">
+        <span id="kwQueryTitle">Search Volume & CPC</span>
+        <div style="display: flex; gap: 4px;">
+          <button class="btn-secondary" id="btnCopyKwAll" style="padding: 2px 6px; font-size: 10px;">Copy All</button>
+          <button class="btn-secondary" id="btnExportKwCsv" style="padding: 2px 6px; font-size: 10px;">Export CSV</button>
+        </div>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Est. Monthly Volume:</span>
+        <span class="metric-val good" id="kwVol">14,200</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Estimated CPC (USD):</span>
+        <span class="metric-val" id="kwCpc">$3.40</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Keyword Difficulty:</span>
+        <span class="tag tag-warn" id="kwDiff">65 / 100</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Search Intent:</span>
+        <span class="tag tag-success" id="kwIntent">INFORMATIONAL</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Related Keyword Suggestions</div>
+      <div id="relatedKwList" style="display: flex; flex-direction: column; gap: 4px;">
+        <!-- Injected suggestions -->
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: AI VISIBILITY (GEO) -->
+  <div class="tab-pane" id="tab-geo">
+    <div class="card">
+      <div class="card-title">AI Visibility & Citations (GEO)</div>
+      <p style="color: var(--muted); font-size: 11px; margin-bottom: 10px;">
+        Monitor whether this domain or brand is cited in Google Gemini and OpenAI search answers.
+      </p>
+      <div class="metric-row">
+        <span class="metric-label">Tracked Active Prompts:</span>
+        <span class="metric-val" id="geoActivePrompts">18 / 100 Quota</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Brand Mention Rate:</span>
+        <span class="metric-val good">78.5%</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Refresh Schedule:</span>
+        <span class="tag tag-success">Daily (BullMQ Active)</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Track New Search Prompt</div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <input type="text" id="inputGeoPrompt" class="input-field" placeholder="e.g. Which software offers best SEO content optimization in 2026?">
+        <button class="btn-primary" id="btnTrackGeoPrompt" style="margin-bottom: 0;">
+          + Schedule Daily AI Prompt
+        </button>
+      </div>
+    </div>
+
+    <button class="btn-secondary" id="btnOpenGeoDashboard" style="width: 100%;">
+      Open Full GEO Tracker in Studio →
+    </button>
+  </div>
+
+  <!-- TAB 4: SETTINGS -->
+  <div class="tab-pane" id="tab-settings">
+    <div class="card">
+      <div class="card-title">Backend Connection Settings</div>
+      <div class="input-group">
+        <label class="input-label">Studio API URL</label>
+        <input type="text" id="inputApiUrl" class="input-field" value="http://localhost:3001">
+      </div>
+      <div class="input-group">
+        <label class="input-label">API Key / Scoped Bearer Token</label>
+        <input type="password" id="inputApiKey" class="input-field" placeholder="sec_live_...">
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 12px;">
+        <button class="btn-primary" id="btnSaveSettings" style="flex: 1; margin-bottom: 0;">Save Settings</button>
+        <button class="btn-secondary" id="btnTestConn">Test Ping</button>
+      </div>
+      <div id="settingsPingResult" style="margin-top: 8px; font-size: 11px; color: var(--muted);"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Extension Environment</div>
+      <div class="metric-row">
+        <span class="metric-label">Manifest Version:</span>
+        <span class="metric-val">Manifest V3</span>
+      </div>
+      <div class="metric-row">
+        <span class="metric-label">Google Search In-SERP Overlay:</span>
+        <span class="tag tag-success">Active on google.com/search</span>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

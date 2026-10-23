@@ -1,0 +1,306 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workspaces Workspace[]
+  members    OrganizationMember[]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  role      String   @default("MEMBER") // OWNER, ADMIN, MEMBER, CSM
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orgMemberships       OrganizationMember[]
+  csmAssignments       CustomerSuccessAssignment[]
+  auditLogs            AuditLog[]
+}
+
+model OrganizationMember {
+  id             String       @id @default(cuid())
+  organizationId String
+  userId         String
+  role           String       @default("MEMBER")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+}
+
+model Workspace {
+  id             String       @id @default(cuid())
+  organizationId String
+  name           String
+  slug           String
+  planTier       String       @default("ENTERPRISE") // STARTER, PROFESSIONAL, ENTERPRISE
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  brandSpaces    BrandSpace[]
+  apiKeys        ApiKey[]
+  integrations   IntegrationConnection[]
+  webhookEndpoints WebhookEndpoint[]
+  csmAssignment  CustomerSuccessAssignment?
+  supportTickets SupportTicket[]
+}
+
+model CustomerSuccessAssignment {
+  id          String    @id @default(cuid())
+  workspaceId String    @unique
+  csmUserId   String
+  assignedAt  DateTime  @default(now())
+  notes       String?
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  csmUser     User      @relation(fields: [csmUserId], references: [id])
+}
+
+model SupportTicket {
+  id          String   @id @default(cuid())
+  workspaceId String
+  subject     String
+  status      String   @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED, CLOSED
+  priority    String   @default("NORMAL")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+model BrandSpace {
+  id               String   @id @default(cuid())
+  workspaceId      String
+  name             String
+  primaryDomain    String
+  targetCountry    String   @default("US")
+  targetLanguage   String   @default("en")
+  brandTone        String?
+  onboardingStep   Int      @default(1)
+  onboardingDone   Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  workspace        Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  competitors      Competitor[]
+  documents        Document[]
+  serpAnalyses     SerpAnalysis[]
+  keywordQueries   KeywordQuery[]
+  aiPrompts        AiPrompt[]
+}
+
+model Competitor {
+  id           String     @id @default(cuid())
+  brandSpaceId String
+  domain       String
+  name         String?
+  brandSpace   BrandSpace @relation(fields: [brandSpaceId], references: [id], onDelete: Cascade)
+}
+
+model Document {
+  id             String   @id @default(cuid())
+  brandSpaceId   String
+  title          String
+  targetKeyword  String
+  contentHtml    String   @default("")
+  contentText    String   @default("")
+  optimizationScore Int   @default(0)
+  wordCount      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  brandSpace     BrandSpace @relation(fields: [brandSpaceId], references: [id], onDelete: Cascade)
+  revisions      DocumentRevision[]
+}
+
+model DocumentRevision {
+  id           String   @id @default(cuid())
+  documentId   String
+  contentHtml  String
+  score        Int
+  wordCount    Int
+  createdAt    DateTime @default(now())
+
+  document     Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+}
+
+model SerpAnalysis {
+  id             String   @id @default(cuid())
+  brandSpaceId   String
+  keyword        String
+  country        String   @default("US")
+  language       String   @default("en")
+  device         String   @default("desktop")
+  provider       String   @default("SERPAPI")
+  status         String   @default("COMPLETED") // PENDING, PROCESSING, COMPLETED, FAILED
+  medianWordCount Int     @default(0)
+  retrievedAt    DateTime @default(now())
+
+  brandSpace     BrandSpace @relation(fields: [brandSpaceId], references: [id], onDelete: Cascade)
+  results        SerpResult[]
+}
+
+model SerpResult {
+  id             String       @id @default(cuid())
+  serpAnalysisId String
+  rank           Int
+  url            String
+  title          String
+  snippet        String?
+  wordCount      Int          @default(0)
+  headingsJson   String?
+
+  serpAnalysis   SerpAnalysis @relation(fields: [serpAnalysisId], references: [id], onDelete: Cascade)
+}
+
+model KeywordQuery {
+  id           String   @id @default(cuid())
+  brandSpaceId String
+  seedKeyword  String
+  country      String   @default("US")
+  provider     String   @default("DATAFORSEO")
+  createdAt    DateTime @default(now())
+
+  brandSpace   BrandSpace @relation(fields: [brandSpaceId], references: [id], onDelete: Cascade)
+  results      KeywordResult[]
+}
+
+model KeywordResult {
+  id             String       @id @default(cuid())
+  keywordQueryId String
+  keyword        String
+  searchVolume   Int          @default(0)
+  cpc            Float        @default(0.0)
+  difficulty     Int          @default(0) // 0-100
+  intent         String       @default("INFORMATIONAL")
+  cluster        String?
+
+  keywordQuery   KeywordQuery @relation(fields: [keywordQueryId], references: [id], onDelete: Cascade)
+}
+
+model AiPrompt {
+  id             String   @id @default(cuid())
+  brandSpaceId   String
+  promptText     String
+  topicCategory  String   @default("general")
+  providerTarget String   @default("AUTO")
+  active         Boolean  @default(true)
+  version        Int      @default(1)
+  lastRunAt      DateTime?
+  nextRunAt      DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  brandSpace     BrandSpace @relation(fields: [brandSpaceId], references: [id], onDelete: Cascade)
+  observations   AiObservation[]
+}
+
+model AiObservation {
+  id             String    @id @default(cuid())
+  aiPromptId     String
+  provider       String    // GEMINI_SEARCH, OPENAI_SEARCH
+  model          String
+  brandMentioned Boolean   @default(false)
+  mentionCount   Int       @default(0)
+  mentionContext String?
+  sentiment      String    @default("NEUTRAL") // POSITIVE, NEUTRAL, NEGATIVE
+  sentimentScore Float     @default(0.0)
+  shareOfVoice   Float     @default(0.0)
+  rawResponse    String?
+  createdAt      DateTime  @default(now())
+
+  aiPrompt       AiPrompt  @relation(fields: [aiPromptId], references: [id], onDelete: Cascade)
+  citations      Citation[]
+}
+
+model Citation {
+  id              String        @id @default(cuid())
+  aiObservationId String
+  citedUrl        String
+  domain          String
+  isOwnBrand      Boolean       @default(false)
+  isCompetitor    Boolean       @default(false)
+  title           String?
+  createdAt       DateTime      @default(now())
+
+  aiObservation   AiObservation @relation(fields: [aiObservationId], references: [id], onDelete: Cascade)
+}
+
+model IntegrationConnection {
+  id          String   @id @default(cuid())
+  workspaceId String
+  provider    String   // GOOGLE_SEARCH_CONSOLE, GOOGLE_ADS, PAGESPEED, WORDPRESS, WEBHOOKS
+  status      String   @default("CONFIGURED") // UNCONFIGURED, CONFIGURED, CONNECTED, ERROR
+  encryptedCredentials String?
+  lastSyncAt  DateTime?
+  errorMessage String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  workspaceId String
+  name        String
+  keyPrefix   String    // e.g. "sec_live_a1b2..."
+  keyHash     String    @unique // SHA-256 hash of secret key
+  scopes      String    @default("read,write")
+  lastUsedAt  DateTime?
+  createdAt   DateTime  @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  usageLogs   ApiUsageLog[]
+}
+
+model ApiUsageLog {
+  id         String   @id @default(cuid())
+  apiKeyId   String
+  endpoint   String
+  method     String
+  statusCode Int
+  latencyMs  Int
+  createdAt  DateTime @default(now())
+
+  apiKey     ApiKey   @relation(fields: [apiKeyId], references: [id], onDelete: Cascade)
+}
+
+model WebhookEndpoint {
+  id          String   @id @default(cuid())
+  workspaceId String
+  targetUrl   String
+  eventsJson  String   // JSON array of event names
+  secretKey   String
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  action      String
+  entityType  String
+  entityId    String
+  detailsJson String?
+  createdAt   DateTime @default(now())
+
+  user        User?    @relation(fields: [userId], references: [id])
+}
