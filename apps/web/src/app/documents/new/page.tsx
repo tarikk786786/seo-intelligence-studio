@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { Suspense, useState, useMemo, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { computeOptimizationScore } from '@repo/seo-engine';
 import { 
@@ -16,7 +16,7 @@ import {
   Save
 } from 'lucide-react';
 
-export default function DocumentEditorPage() {
+function DocumentEditorContent() {
   const searchParams = useSearchParams();
   const initialKeyword = searchParams.get('targetKeyword') || 'generative engine optimization';
   const initialTitle = searchParams.get('title') || 'Generative Engine Optimization (GEO): Complete Playbook';
@@ -278,5 +278,13 @@ export default function DocumentEditorPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function DocumentEditorPage() {
+  return (
+    <Suspense fallback={<div className="min-h-[80vh] flex items-center justify-center text-gray-400 text-xs">Loading Content Editor & SEO Scorer...</div>}>
+      <DocumentEditorContent />
+    </Suspense>
   );
 }

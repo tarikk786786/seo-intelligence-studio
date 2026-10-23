@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { 
   KeyRound, 
@@ -12,7 +12,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 
-export default function LoginPage() {
+function LoginFormContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -221,5 +221,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-[80vh] flex items-center justify-center text-gray-400 text-xs">Loading Studio Access Portal...</div>}>
+      <LoginFormContent />
+    </Suspense>
   );
 }

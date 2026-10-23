@@ -20,10 +20,10 @@
     ],
     "paths": {
       "@/*": ["./src/*"],
-      "@repo/database": ["../../packages/database/src/index.ts"],
-      "@repo/seo-engine": ["../../packages/seo-engine/src/index.ts"],
-      "@repo/provider-adapters": ["../../packages/provider-adapters/src/index.ts"],
-      "@repo/shared-types": ["../../packages/shared-types/src/index.ts"]
+      "@repo/database": ["../../packages/database/dist/index.d.ts"],
+      "@repo/seo-engine": ["../../packages/seo-engine/dist/index.d.ts"],
+      "@repo/provider-adapters": ["../../packages/provider-adapters/dist/index.d.ts"],
+      "@repo/shared-types": ["../../packages/shared-types/dist/index.d.ts"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
