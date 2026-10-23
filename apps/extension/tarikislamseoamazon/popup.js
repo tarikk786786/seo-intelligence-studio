@@ -106,31 +106,36 @@ async function loadSettings() {
         console.error('Storage access error', e);
     }
 }
-// Ping Backend API Health
+// Ping Backend API Health with Auto-Discovery (Port 3000 / 3001)
 async function checkBackendHealth() {
     const pill = document.getElementById('connPill');
     const text = document.getElementById('connText');
-    try {
-        const res = await fetch(`${backendApiUrl}/api/v1/health`, { signal: AbortSignal.timeout(3000) });
-        if (res.ok) {
-            if (pill)
-                pill.style.borderColor = 'rgba(16, 185, 129, 0.4)';
-            if (text)
-                text.textContent = 'Studio Connected';
+    const candidates = [backendApiUrl, 'http://localhost:3000', 'http://localhost:3001'];
+    for (const url of candidates) {
+        try {
+            const res = await fetch(`${url}/api/v1/health`, { signal: AbortSignal.timeout(2000) });
+            if (res.ok) {
+                backendApiUrl = url;
+                const input = document.getElementById('inputApiUrl');
+                if (input)
+                    input.value = url;
+                if (pill) {
+                    pill.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                    pill.style.color = 'var(--success)';
+                }
+                if (text)
+                    text.textContent = 'Studio Connected';
+                return;
+            }
         }
-        else {
-            if (text)
-                text.textContent = 'API Error';
-        }
+        catch { }
     }
-    catch {
-        if (pill) {
-            pill.style.borderColor = 'rgba(239, 68, 68, 0.4)';
-            pill.style.color = 'var(--danger)';
-        }
-        if (text)
-            text.textContent = 'Studio Offline';
+    if (pill) {
+        pill.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+        pill.style.color = 'var(--danger)';
     }
+    if (text)
+        text.textContent = 'Studio Offline';
 }
 // Inspect Active Tab via scripting API
 async function inspectActiveTab() {
